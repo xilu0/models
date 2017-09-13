@@ -34,25 +34,29 @@ import metrics
 import sequence_layers
 import utils
 
-
 OutputEndpoints = collections.namedtuple('OutputEndpoints', [
-    'chars_logit', 'chars_log_prob', 'predicted_chars', 'predicted_scores'
+  'chars_logit', 'chars_log_prob', 'predicted_chars', 'predicted_scores',
+  'predicted_text'
 ])
 
 # TODO(gorban): replace with tf.HParams when it is released.
 ModelParams = collections.namedtuple('ModelParams', [
-    'num_char_classes', 'seq_length', 'num_views', 'null_code'
+  'num_char_classes', 'seq_length', 'num_views', 'null_code'
 ])
 
 ConvTowerParams = collections.namedtuple('ConvTowerParams', ['final_endpoint'])
 
 SequenceLogitsParams = collections.namedtuple('SequenceLogitsParams', [
-    'use_attention', 'use_autoregression', 'num_lstm_units', 'weight_decay',
-    'lstm_state_clip_value'
+  'use_attention', 'use_autoregression', 'num_lstm_units', 'weight_decay',
+  'lstm_state_clip_value'
 ])
 
 SequenceLossParams = collections.namedtuple('SequenceLossParams', [
-    'label_smoothing', 'ignore_nulls', 'average_across_timesteps'
+  'label_smoothing', 'ignore_nulls', 'average_across_timesteps'
+])
+
+EncodeCoordinatesParams = collections.namedtuple('EncodeCoordinatesParams', [
+  'enabled'
 ])
 
 
@@ -121,11 +125,12 @@ class Model(object):
   """Class to create the Attention OCR Model."""
 
   def __init__(self,
-               num_char_classes,
-               seq_length,
-               num_views,
-               null_code,
-               mparams=None):
+      num_char_classes,
+      seq_length,
+      num_views,
+      null_code,
+      mparams=None,
+      charset=None):
     """Initialized model parameters.
 
     Args:
@@ -136,6 +141,13 @@ class Model(object):
         indicates end of a sequence.
       mparams: a dictionary with hyper parameters for methods,  keys -
         function names, values - corresponding namedtuples.
+      charset: an optional dictionary with a mapping between character ids and
+        utf8 strings. If specified the OutputEndpoints.predicted_text will
+        utf8 encoded strings corresponding to the character ids returned by
+        OutputEndpoints.predicted_chars (by default the predicted_text contains
+        an empty vector). 
+        NOTE: Make sure you call tf.tables_initializer().run() if the charset
+        specified.
     """
     super(Model, self).__init__()
     self._params = ModelParams(
@@ -146,23 +158,25 @@ class Model(object):
     self._mparams = self.default_mparams()
     if mparams:
       self._mparams.update(mparams)
+    self._charset = charset
 
   def default_mparams(self):
     return {
-        'conv_tower_fn':
+      'conv_tower_fn':
         ConvTowerParams(final_endpoint='Mixed_5d'),
-        'sequence_logit_fn':
+      'sequence_logit_fn':
         SequenceLogitsParams(
             use_attention=True,
             use_autoregression=True,
             num_lstm_units=256,
             weight_decay=0.00004,
             lstm_state_clip_value=10.0),
-        'sequence_loss_fn':
+      'sequence_loss_fn':
         SequenceLossParams(
             label_smoothing=0.1,
             ignore_nulls=True,
-            average_across_timesteps=False)
+            average_across_timesteps=False),
+      'encode_coordinates_fn': EncodeCoordinatesParams(enabled=False)
     }
 
   def set_mparam(self, function, **kwargs):
@@ -236,7 +250,7 @@ class Model(object):
       A tensor with the same size as any input tensors.
     """
     batch_size, height, width, num_features = [
-        d.value for d in nets_list[0].get_shape().dims
+      d.value for d in nets_list[0].get_shape().dims
     ]
     xy_flat_shape = (batch_size, 1, height * width, num_features)
     nets_for_merge = []
@@ -293,11 +307,35 @@ class Model(object):
     scores = tf.reshape(selected_scores, shape=(-1, self._params.seq_length))
     return ids, log_prob, scores
 
+  def encode_coordinates_fn(self, net):
+    """Adds one-hot encoding of coordinates to different views in the networks.
+
+    For each "pixel" of a feature map it adds a onehot encoded x and y
+    coordinates.
+
+    Args:
+      net: a tensor of shape=[batch_size, height, width, num_features]
+
+    Returns:
+      a tensor with the same height and width, but altered feature_size.
+    """
+    mparams = self._mparams['encode_coordinates_fn']
+    if mparams.enabled:
+      batch_size, h, w, _ = net.shape.as_list()
+      x, y = tf.meshgrid(tf.range(w), tf.range(h))
+      w_loc = slim.one_hot_encoding(x, num_classes=w)
+      h_loc = slim.one_hot_encoding(y, num_classes=h)
+      loc = tf.concat([h_loc, w_loc], 2)
+      loc = tf.tile(tf.expand_dims(loc, 0), [batch_size, 1, 1, 1])
+      return tf.concat([net, loc], 3)
+    else:
+      return net
+
   def create_base(self,
-                  images,
-                  labels_one_hot,
-                  scope='AttentionOcr_v1',
-                  reuse=None):
+      images,
+      labels_one_hot,
+      scope='AttentionOcr_v1',
+      reuse=None):
     """Creates a base part of the Model (no gradients, losses or summaries).
 
     Args:
@@ -319,10 +357,13 @@ class Model(object):
       logging.debug('Views=%d single view: %s', len(views), views[0])
 
       nets = [
-          self.conv_tower_fn(v, is_training, reuse=(i != 0))
-          for i, v in enumerate(views)
+        self.conv_tower_fn(v, is_training, reuse=(i != 0))
+        for i, v in enumerate(views)
       ]
       logging.debug('Conv tower: %s', nets[0])
+
+      nets = [self.encode_coordinates_fn(net) for net in nets]
+      logging.debug('Conv tower w/ encoded coordinates: %s', nets[0])
 
       net = self.pool_views_fn(nets)
       logging.debug('Pooled views: %s', net)
@@ -331,13 +372,18 @@ class Model(object):
       logging.debug('chars_logit: %s', chars_logit)
 
       predicted_chars, chars_log_prob, predicted_scores = (
-          self.char_predictions(chars_logit))
-
+        self.char_predictions(chars_logit))
+      if self._charset:
+        character_mapper = CharsetMapper(self._charset)
+        predicted_text = character_mapper.get_text(predicted_chars)
+      else:
+        predicted_text = tf.constant([])
     return OutputEndpoints(
         chars_logit=chars_logit,
         chars_log_prob=chars_log_prob,
         predicted_chars=predicted_chars,
-        predicted_scores=predicted_scores)
+        predicted_scores=predicted_scores,
+        predicted_text=predicted_text)
 
   def create_loss(self, data, endpoints):
     """Creates all losses required to train the model.
@@ -491,7 +537,8 @@ class Model(object):
         tf.summary.scalar(summary_name, tf.Print(value, [value], summary_name))
       return names_to_updates.values()
 
-  def create_init_fn_to_restore(self, master_checkpoint, inception_checkpoint):
+  def create_init_fn_to_restore(self, master_checkpoint,
+      inception_checkpoint=None):
     """Creates an init operations to restore weights from various checkpoints.
 
     Args:
