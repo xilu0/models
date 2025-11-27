@@ -1,38 +1,29 @@
-adversarial_crypto/* @dave-andersen
-adversarial_text/* @rsepassi
-adv_imagenet_models/* @AlexeyKurakin
-attention_ocr/* @alexgorban
-audioset/* @plakal @dpwe
-autoencoders/* @snurkabill
-cognitive_mapping_and_planning/* @s-gupta
-compression/* @nmjohn
-differential_privacy/* @panyx0718
-domain_adaptation/* @bousmalis @ddohan
-im2txt/* @cshallue
-inception/* @shlens @vincentvanhoucke
-learned_optimizer/* @olganw @nirum
-learning_to_remember_rare_events/* @lukaszkaiser @ofirnachum
-lfads/* @jazcollins @susillo
-lm_1b/* @oriolvinyals @panyx0718
-namignizer/* @knathanieltucker
-neural_gpu/* @lukaszkaiser
-neural_programmer/* @arvind2505
-next_frame_prediction/* @panyx0718
-object_detection/* @jch1 @tombstone @derekjchow @jesu9 @dreamdragon
-pcl_rl/* @ofirnachum
-ptn/* @xcyan @arkanath @hellojas @honglaklee
-real_nvp/* @laurent-dinh
-rebar/* @gjtucker
-resnet/* @panyx0718
-skip_thoughts/* @cshallue
-slim/* @sguada @nathansilberman
-street/* @theraysmith
-swivel/* @waterson
-syntaxnet/* @calberti @andorardo
-textsum/* @panyx0718 @peterjliu
-transformer/* @daviddao
-tutorials/embedding/* @zffchen78 @a-dai
-tutorials/image/* @sherrym @shlens
-tutorials/rnn/* @lukaszkaiser @ebrevdo
-video_prediction/* @cbfinn
-
+* @tensorflow/tf-model-garden-team
+/official/ @rachellj218
+/official/nlp/ @lehougoogle @rachellj218
+/official/recommendation/ranking/ @gagika
+/official/vision/ @yeqingli @arashwan @rachellj218
+/official/vision/projects/assemblenet/ @yeqingli
+/official/vision/projects/deepmac_maskrcnn/ @vighneshbirodkar
+/official/vision/projects/movinet/ @hyperparticle @yuanliangzhe @yeqingli
+/official/vision/projects/simclr/ @luotigerlsx @saxenasaurabh
+/official/vision/projects/video_ssl/ @yeqingli
+/research/adversarial_text/ @rsepassi @a-dai
+/research/attention_ocr/ @xavigibert
+/research/audioset/ @plakal @dpwe
+/research/autoaugment/ @barretzoph
+/research/cognitive_planning/ @s-gupta
+/research/cvt_text/ @clarkkev @lmthang
+/research/deep_speech/ @yhliang2018
+/research/deeplab/ @aquariusjay @yknzhu
+/research/delf/ @andrefaraujo
+/research/efficient-hrl/ @ofirnachum
+/research/lfads/ @jazcollins @sussillo
+/research/lstm_object_detection/ @yinxiaoli @yongzhe2160
+/research/marco/ @vincentvanhoucke
+/research/object_detection/ @jch1 @tombstone @pkulzc
+/research/pcl_rl/ @ofirnachum
+/research/rebar/ @gjtucker
+/research/seq_flow_lite/ @thunderfyc @karunreddy30
+/research/slim/ @sguada @marksandler2
+/research/vid2depth/ @rezama

@@ -72,6 +72,9 @@ target/
 # pyenv
 .python-version
 
+# mypy
+.mypy_cache
+
 # celery beat schedule file
 celerybeat-schedule
 
@@ -90,3 +93,6 @@ ENV/
 
 # PyCharm
 .idea/
+
+# For mac
+.DS_Store

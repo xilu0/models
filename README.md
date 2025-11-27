@@ -1,47 +1,130 @@
-# TensorFlow Models
+<div align="center">
+  <img src="https://storage.googleapis.com/tf_model_garden/tf_model_garden_logo.png">
+</div>
 
-This repository contains machine learning models implemented in
-[TensorFlow](https://tensorflow.org). The models are maintained by their
-respective authors. To propose a model for inclusion, please submit a pull
-request.
-
-Currently, the models are compatible with TensorFlow 1.0 or later. If you are
-running TensorFlow 0.12 or earlier, please
-[upgrade your installation](https://www.tensorflow.org/install).
+[![Python](https://img.shields.io/pypi/pyversions/tensorflow.svg?style=plastic)](https://badge.fury.io/py/tensorflow)
+[![tf-models-official PyPI](https://badge.fury.io/py/tf-models-official.svg)](https://badge.fury.io/py/tf-models-official)
 
 
-## Models
-- [adversarial_crypto](adversarial_crypto): protecting communications with adversarial neural cryptography.
-- [adversarial_text](adversarial_text): semi-supervised sequence learning with adversarial training.
-- [attention_ocr](attention_ocr): a model for real-world image text extraction.
-- [audioset](audioset): Models and supporting code for use with [AudioSet](http://g.co.audioset).
-- [autoencoder](autoencoder): various autoencoders.
-- [cognitive_mapping_and_planning](cognitive_mapping_and_planning): implementation of a spatial memory based mapping and planning architecture for visual navigation.
-- [compression](compression): compressing and decompressing images using a pre-trained Residual GRU network.
-- [differential_privacy](differential_privacy): privacy-preserving student models from multiple teachers.
-- [domain_adaptation](domain_adaptation): domain separation networks.
-- [im2txt](im2txt): image-to-text neural network for image captioning.
-- [inception](inception): deep convolutional networks for computer vision.
-- [learning_to_remember_rare_events](learning_to_remember_rare_events):  a large-scale life-long memory module for use in deep learning.
-- [lfads](lfads): sequential variational autoencoder for analyzing neuroscience data.
-- [lm_1b](lm_1b): language modeling on the one billion word benchmark.
-- [namignizer](namignizer): recognize and generate names.
-- [neural_gpu](neural_gpu): highly parallel neural computer.
-- [neural_programmer](neural_programmer): neural network augmented with logic and mathematic operations.
-- [next_frame_prediction](next_frame_prediction): probabilistic future frame synthesis via cross convolutional networks.
-- [object_detection](object_detection): localizing and identifying multiple objects in a single image.
-- [pcl_rl](pcl_rl): code for several reinforcement learning algorithms, including Path Consistency Learning.
-- [ptn](ptn): perspective transformer nets for 3D object reconstruction.
-- [qa_kg](qa_kg): module networks for question answering on knowledge graphs.
-- [real_nvp](real_nvp): density estimation using real-valued non-volume preserving (real NVP) transformations.
-- [rebar](rebar): low-variance, unbiased gradient estimates for discrete latent variable models.
-- [resnet](resnet): deep and wide residual networks.
-- [skip_thoughts](skip_thoughts): recurrent neural network sentence-to-vector encoder.
-- [slim](slim): image classification models in TF-Slim.
-- [street](street): identify the name of a street (in France) from an image using a Deep RNN.
-- [swivel](swivel): the Swivel algorithm for generating word embeddings.
-- [syntaxnet](syntaxnet): neural models of natural language syntax.
-- [textsum](textsum): sequence-to-sequence with attention model for text summarization.
-- [transformer](transformer): spatial transformer network, which allows the spatial manipulation of data within the network.
-- [tutorials](tutorials): models described in the [TensorFlow tutorials](https://www.tensorflow.org/tutorials/).
-- [video_prediction](video_prediction): predicting future video frames with neural advection.
+# Welcome to the Model Garden for TensorFlow
+
+The TensorFlow Model Garden is a repository with a number of different
+implementations of state-of-the-art (SOTA) models and modeling solutions for
+TensorFlow users. We aim to demonstrate the best practices for modeling so that
+TensorFlow users can take full advantage of TensorFlow for their research and
+product development.
+
+To improve the transparency and reproducibility of our models, training logs on
+[TensorBoard.dev](https://tensorboard.dev) are also provided for models to the
+extent possible though not all models are suitable.
+
+| Directory | Description |
+|-----------|-------------|
+| [official](official) | • A collection of example implementations for SOTA models using the latest TensorFlow 2's high-level APIs<br />• Officially maintained, supported, and kept up to date with the latest TensorFlow 2 APIs by TensorFlow<br />• Reasonably optimized for fast performance while still being easy to read<br /> For more details on the capabilities, check the guide on the [Model-garden](https://www.tensorflow.org/tfmodels)|
+| [research](research) | • A collection of research model implementations in TensorFlow 1 or 2 by researchers<br />• Maintained and supported by researchers |
+| [community](community) | • A curated list of the GitHub repositories with machine learning models and implementations powered by TensorFlow 2 |
+| [orbit](orbit) | • A flexible and lightweight library that users can easily use or fork when writing customized training loop code in TensorFlow 2.x. It seamlessly integrates with `tf.distribute` and supports running on different device types (CPU, GPU, and TPU). |
+
+## Installation
+
+To install the current release of tensorflow-models, please follow any one of the methods described below.
+
+#### Method 1: Install the TensorFlow Model Garden pip package
+
+<details>
+
+**tf-models-official** is the stable Model Garden package. Please check out the [releases](https://github.com/tensorflow/models/releases) to see what are available modules.
+
+pip3 will install all models and dependencies automatically.
+
+```shell
+pip3 install tf-models-official
+```
+
+Please check out our examples:
+  - [basic library import](https://github.com/tensorflow/models/blob/master/tensorflow_models/tensorflow_models_pypi.ipynb)
+  - [nlp model building](https://github.com/tensorflow/models/blob/master/docs/nlp/index.ipynb)
+to learn how to use a PIP package.
+
+Note that **tf-models-official** may not include the latest changes in the master branch of this
+github repo. To include latest changes, you may install **tf-models-nightly**,
+which is the nightly Model Garden package created daily automatically.
+
+```shell
+pip3 install tf-models-nightly
+```
+
+</details>
+
+
+#### Method 2: Clone the source
+
+<details>
+
+1. Clone the GitHub repository:
+
+```shell
+git clone https://github.com/tensorflow/models.git
+```
+
+2. Add the top-level ***/models*** folder to the Python path.
+
+```shell
+export PYTHONPATH=$PYTHONPATH:/path/to/models
+```
+
+If you are using in a Windows environment, you may need to use the following command with PowerShell:
+```shell
+$env:PYTHONPATH += ":\path\to\models"
+```
+
+If you are using a Colab notebook, please set the Python path with os.environ.
+
+```python
+import os
+os.environ['PYTHONPATH'] += ":/path/to/models"
+```
+
+3. Install other dependencies
+
+```shell
+pip3 install --user -r models/official/requirements.txt
+```
+
+Finally, if you are using nlp packages, please also install
+**tensorflow-text-nightly**:
+
+```shell
+pip3 install tensorflow-text-nightly
+```
+
+</details>
+
+
+## Announcements
+
+Please check [this page](https://github.com/tensorflow/models/wiki/Announcements) for recent announcements.
+
+## Contributions
+
+[![help wanted:paper implementation](https://img.shields.io/github/issues/tensorflow/models/help%20wanted%3Apaper%20implementation)](https://github.com/tensorflow/models/labels/help%20wanted%3Apaper%20implementation)
+
+If you want to contribute, please review the [contribution guidelines](https://github.com/tensorflow/models/wiki/How-to-contribute).
+
+## License
+
+[Apache License 2.0](LICENSE)
+
+## Citing TensorFlow Model Garden
+
+If you use TensorFlow Model Garden in your research, please cite this repository.
+
+```
+@misc{tensorflowmodelgarden2020,
+  author = {Hongkun Yu and Chen Chen and Xianzhi Du and Yeqing Li and Abdullah Rashwan and Le Hou and Pengchong Jin and Fan Yang
+            and Frederick Liu and Jaeyoun Kim and Jing Li},
+  title = {{TensorFlow Model Garden}},
+  howpublished = {\url{https://github.com/tensorflow/models}},
+  year = {2020}
+}
+```
